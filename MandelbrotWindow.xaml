@@ -1,0 +1,8 @@
+﻿<Window x:Class="WpfMandelbrot.MandelbrotWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mandelbrot View" Width="640" Height="480">
+    <Image x:Name="MandelbrotImage" 
+           Stretch="Fill"
+           MouseDown="MandelbrotImage_MouseDown"/>
+</Window>
