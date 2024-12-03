@@ -1,11 +1,11 @@
-﻿using System.IO;
-using System.Windows;
+﻿using System.Windows.Media.Effects;
 using System.Windows.Media;
-using System.Windows.Media.Effects;
+using System.Windows;
+using System.IO;
 
 public class MandelbrotEffect : ShaderEffect
 {
- static PixelShader pixelShader = new PixelShader();
+    private static PixelShader pixelShader = new PixelShader();
 
     public static readonly DependencyProperty InputProperty =
         RegisterPixelShaderSamplerProperty("input", typeof(MandelbrotEffect), 0);
@@ -28,8 +28,8 @@ public class MandelbrotEffect : ShaderEffect
 
     public static readonly DependencyProperty ColorModeProperty =
     DependencyProperty.Register("ColorMode", typeof(double), typeof(MandelbrotEffect),
-        new UIPropertyMetadata(0.0, PixelShaderConstantCallback(4)));
-
+        new UIPropertyMetadata(0.0, PixelShaderConstantCallback(4)));  // Note the index 4
+   
 
     public MandelbrotEffect()
     {
@@ -39,8 +39,10 @@ public class MandelbrotEffect : ShaderEffect
             pixelShader.UriSource = new Uri(shaderPath);
             this.PixelShader = pixelShader;
 
+            // Important: Set input to null since we're using the Rectangle's Fill
             this.SetValue(InputProperty, null);
 
+            // Initialize default values
             UpdateShaderValue(CenterProperty);
             UpdateShaderValue(ZoomProperty);
             UpdateShaderValue(MaxIterationsProperty);
@@ -54,38 +56,38 @@ public class MandelbrotEffect : ShaderEffect
 
     public double ColorMode
     {
-        get => (double)GetValue(ColorModeProperty);
-        set => SetValue(ColorModeProperty, value);
+        get { return (double)GetValue(ColorModeProperty); }
+        set { SetValue(ColorModeProperty, value); }
     }
 
     public Brush Input
     {
-        get => (Brush)GetValue(InputProperty);
-        set => SetValue(InputProperty, value);
+        get { return (Brush)GetValue(InputProperty); }
+        set { SetValue(InputProperty, value); }
     }
 
     public Point Center
     {
-        get => (Point)GetValue(CenterProperty);
-        set => SetValue(CenterProperty, value);
+        get { return (Point)GetValue(CenterProperty); }
+        set { SetValue(CenterProperty, value); }
     }
 
     public double Zoom
     {
-        get => (double)GetValue(ZoomProperty);
-        set => SetValue(ZoomProperty, value);
+        get { return (double)GetValue(ZoomProperty); }
+        set { SetValue(ZoomProperty, value); }
     }
 
     public double MaxIterations
     {
-        get => (double)GetValue(MaxIterationsProperty);
-        set => SetValue(MaxIterationsProperty, value);
+        get { return (double)GetValue(MaxIterationsProperty); }
+        set { SetValue(MaxIterationsProperty, value); }
     }
 
     public Point Resolution
     {
-        get => (Point)GetValue(ResolutionProperty);
-        set => SetValue(ResolutionProperty, value);
+        get { return (Point)GetValue(ResolutionProperty); }
+        set { SetValue(ResolutionProperty, value); }
     }
 }
 
