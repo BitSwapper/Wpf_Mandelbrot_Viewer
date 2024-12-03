@@ -6,45 +6,80 @@ cbuffer Parameters : register(b0)
     float Zoom;
     float MaxIterations;
     float2 Resolution;
+    float ColorMode;  // Added for different color schemes
+}
+
+float3 RainbowColor(float t)
+{
+    float3 color;
+    t *= 6.0;
+    if (t < 1.0) color = float3(1, t, 0);
+    else if (t < 2.0) color = float3(2.0 - t, 1, 0);
+    else if (t < 3.0) color = float3(0, 1, t - 2.0);
+    else if (t < 4.0) color = float3(0, 4.0 - t, 1);
+    else if (t < 5.0) color = float3(t - 4.0, 0, 1);
+    else color = float3(1, 0, 6.0 - t);
+    return color;
+}
+
+float3 BlueYellowColor(float t)
+{
+    return lerp(float3(0, 0, 1), float3(1, 1, 0), t);
+}
+
+float3 GrayscaleColor(float t)
+{
+    return float3(t, t, t);
 }
 
 float4 main(float2 uv : TEXCOORD) : COLOR
 {
-    // Modify the scaling factor by dividing by 2 to zoom out
+    // Use higher precision calculations
     float2 z = (uv - 0.5) * Resolution / min(Resolution.x, Resolution.y) / (Zoom * 0.5) + Center;
     float2 c = z;
+    float2 dz = float2(1, 0);  // For orbit trapping
     
     int i;
+    float smooth_i = 0;
+    
     for (i = 0; i < MaxIterations; i++)
     {
-        if (dot(z, z) > 4.0) break;
-        float2 z_squared = float2(z.x * z.x - z.y * z.y, 2 * z.x * z.y);
-        z = z_squared + c;
+        if (dot(z, z) > 4.0)
+        {
+            // Smooth iteration count for better coloring
+            smooth_i = i + 1 - log2(log2(dot(z, z))) / log(2.0);
+            break;
+        }
+        
+        // Calculate next iteration with higher precision
+        float x = z.x * z.x - z.y * z.y + c.x;
+        float y = 2 * z.x * z.y + c.y;
+        z = float2(x, y);
+        
+        // Update derivative for orbit trapping
+        float dx = 2 * (z.x * dz.x - z.y * dz.y) + 1;
+        float dy = 2 * (z.x * dz.y + z.y * dz.x);
+        dz = float2(dx, dy);
     }
     
     if (i >= MaxIterations)
         return float4(0, 0, 0, 1);
-        
-    // Smooth coloring
-    float smoothed = i - log2(log2(dot(z, z))) / 2;
-    float hue = smoothed / MaxIterations;
     
-    // HSV to RGB conversion for better coloring
-    float h = hue * 6.0;
-    float s = 0.8;
-    float v = 1.0;
+    float t = smooth_i / MaxIterations;
     
-    float colorMax = v * s;
-    float x = colorMax * (1 - abs(fmod(h, 2) - 1));
-    float m = v - colorMax;
+    // Add some orbit trap coloring
+    float orbit = 0.5 + 0.5 * sin(log(length(dz)) * 0.5);
+    t = lerp(t, orbit, 0.2);  // Blend with orbit trap
     
     float3 color;
-    if (h < 1) color = float3(colorMax, x, 0);
-    else if (h < 2) color = float3(x, colorMax, 0);
-    else if (h < 3) color = float3(0, colorMax, x);
-    else if (h < 4) color = float3(0, x, colorMax);
-    else if (h < 5) color = float3(x, 0, colorMax);
-    else color = float3(colorMax, 0, x);
-    
-    return float4(color + m, 1.0);
+    if (ColorMode == 0)
+        color = RainbowColor(t);
+    else if (ColorMode == 1)
+        color = GrayscaleColor(t);
+    else if (ColorMode == 2)
+        color = BlueYellowColor(t);
+    else
+        color = RainbowColor(t);
+        
+    return float4(color, 1.0);
 }

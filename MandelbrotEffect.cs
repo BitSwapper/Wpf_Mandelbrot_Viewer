@@ -26,6 +26,11 @@ public class MandelbrotEffect : ShaderEffect
         DependencyProperty.Register("Resolution", typeof(Point), typeof(MandelbrotEffect),
             new UIPropertyMetadata(new Point(1920, 1080), PixelShaderConstantCallback(3)));
 
+    public static readonly DependencyProperty ColorModeProperty =
+    DependencyProperty.Register("ColorMode", typeof(double), typeof(MandelbrotEffect),
+        new UIPropertyMetadata(0.0, PixelShaderConstantCallback(4)));  // Note the index 4
+   
+
     public MandelbrotEffect()
     {
         try
@@ -47,6 +52,12 @@ public class MandelbrotEffect : ShaderEffect
         {
             MessageBox.Show($"Shader initialization failed: {ex.Message}");
         }
+    }
+
+    public double ColorMode
+    {
+        get { return (double)GetValue(ColorModeProperty); }
+        set { SetValue(ColorModeProperty, value); }
     }
 
     public Brush Input
@@ -79,3 +90,5 @@ public class MandelbrotEffect : ShaderEffect
         set { SetValue(ResolutionProperty, value); }
     }
 }
+
+//"C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\fxc.exe" /T ps_3_0 /E main /Fo "F:\Coding Projects\C#\WpfMandelbrot\WpfMandelbrot\bin\Debug\net8.0-windows\Mandelbrot.ps" "F:\Coding Projects\C#\WpfMandelbrot\WpfMandelbrot\Shaders\Mandelbrot.hlsl"
