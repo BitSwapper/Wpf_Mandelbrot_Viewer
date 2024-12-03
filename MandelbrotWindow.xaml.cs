@@ -32,10 +32,13 @@ public partial class MandelbrotWindow : Window
 
     public void UpdateMandelbrot(double centerX, double centerY, double zoom, RenderSettings settings)
     {
-        //mandelbrotEffect.Center = new Point(centerX, centerY);
-        //mandelbrotEffect.Zoom = zoom;
-        //mandelbrotEffect.MaxIterations = settings.MaxIterations;
-        //mandelbrotEffect.Resolution = new Point(MandelbrotImage.ActualWidth, MandelbrotImage.ActualHeight);
+        mandelbrotEffect.Center = new Point(centerX, centerY);
+        mandelbrotEffect.Zoom = zoom;
+        mandelbrotEffect.MaxIterations = settings.MaxIterations;
+        mandelbrotEffect.Resolution = new Point(
+            MandelbrotImage.ActualWidth > 0 ? MandelbrotImage.ActualWidth : 640,
+            MandelbrotImage.ActualHeight > 0 ? MandelbrotImage.ActualHeight : 480
+        );
     }
 
     private void MandelbrotWindow_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -49,79 +52,22 @@ public partial class MandelbrotWindow : Window
     private void MandelbrotImage_MouseDown(object sender, MouseButtonEventArgs e)
     {
         Point pos = e.GetPosition(MandelbrotImage);
-        double newX = (pos.X - MandelbrotImage.ActualWidth/2) / (MandelbrotImage.ActualWidth/4) / mainWindow.Zoom + mainWindow.CenterX;
-        double newY = (pos.Y - MandelbrotImage.ActualHeight/2) / (MandelbrotImage.ActualHeight/4) / mainWindow.Zoom + mainWindow.CenterY;
+
+        // Convert to normalized coordinates (0 to 1)
+        double normalizedX = pos.X / MandelbrotImage.ActualWidth;
+        double normalizedY = pos.Y / MandelbrotImage.ActualHeight;
+
+        // Transform to match shader coordinates
+        double minDim = Math.Min(MandelbrotImage.ActualWidth, MandelbrotImage.ActualHeight);
+        double newX = (normalizedX - 0.5) * MandelbrotImage.ActualWidth / minDim / (mainWindow.Zoom * 0.5) + mainWindow.CenterX;
+        double newY = (normalizedY - 0.5) * MandelbrotImage.ActualHeight / minDim / (mainWindow.Zoom * 0.5) + mainWindow.CenterY;
+
         mainWindow.CenterX = newX;
         mainWindow.CenterY = newY;
         mainWindow.UpdateMandelbrot();
     }
 
-   
 
-    //private void InitializeBitmap()
-    //{
-    //    var width = MandelbrotImage.ActualWidth == 0 ? this.Width : MandelbrotImage.ActualWidth;
-    //    var height = MandelbrotImage.ActualHeight == 0 ? this.Height : MandelbrotImage.ActualHeight;
-    //    mandelbrotBitmap = new WriteableBitmap((int)width, (int)height, 72, 72, PixelFormats.Rgb24, null);
-    //    MandelbrotImage.Source = mandelbrotBitmap;
-    //}
-
-    //public void UpdateMandelbrot(double centerX, double centerY, double zoom, RenderSettings settings)
-    //{
-    //    if(mandelbrotBitmap == null) return;
-
-    //    int width = mandelbrotBitmap.PixelWidth;
-    //    int height = mandelbrotBitmap.PixelHeight;
-
-    //    // Apply quality settings
-    //    int skip = settings.Quality switch
-    //    {
-    //        RenderQuality.Draft => 4,
-    //        RenderQuality.Normal => 1,
-    //        RenderQuality.High => 1,
-    //        _ => 1
-    //    };
-
-    //    byte[] pixels = new byte[width * height * 3];
-
-    //    for(int x = 0; x < width; x += skip)
-    //    {
-    //        for(int y = 0; y < height; y += skip)
-    //        {
-    //            double x0 = (x - width/2.0) / (width/4.0) / zoom + centerX;
-    //            double y0 = (y - height/2.0) / (height/4.0) / zoom + centerY;
-
-    //            int iteration = CalculateMandelbrot(x0, y0, settings.MaxIterations);
-    //            Color color = GetColor(iteration, settings);
-
-    //            // Fill skipped pixels for draft mode
-    //            for(int dx = 0; dx < skip && x + dx < width; dx++)
-    //            {
-    //                for(int dy = 0; dy < skip && y + dy < height; dy++)
-    //                {
-    //                    int pixelOffset = ((y + dy) * width + (x + dx)) * 3;
-    //                    pixels[pixelOffset] = color.R;
-    //                    pixels[pixelOffset + 1] = color.G;
-    //                    pixels[pixelOffset + 2] = color.B;
-    //                }
-    //            }
-    //        }
-    //    }
-
-    //    mandelbrotBitmap.WritePixels(
-    //        new Int32Rect(0, 0, width, height),
-    //        pixels, width * 3, 0);
-    //}
-    //private void MandelbrotImage_MouseDown(object sender, MouseButtonEventArgs e)
-    //{
-    //    Point pos = e.GetPosition(MandelbrotImage);
-
-    //    double newX = (pos.X - MandelbrotImage.ActualWidth/2) / (MandelbrotImage.ActualWidth/4) / mainWindow.Zoom + mainWindow.CenterX;
-    //    double newY = (pos.Y - MandelbrotImage.ActualHeight/2) / (MandelbrotImage.ActualHeight/4) / mainWindow.Zoom + mainWindow.CenterY;
-    //    mainWindow.CenterX = newX;
-    //    mainWindow.CenterY = newY;
-    //    mainWindow.UpdateMandelbrot();
-    //}
     private Color GetColor(int iteration, RenderSettings settings)
     {
         if(iteration == settings.MaxIterations)
