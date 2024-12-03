@@ -7,5 +7,23 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Shaders\Mandelbrot.hlsl" />
+	  <None Remove="Shaders\Mandelbrot.ps" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Shaders\Mandelbrot.hlsl">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Resource Include="Shaders\Mandelbrot.ps">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Resource>
+	</ItemGroup>
 
 </Project>
+
+<!-- "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\fxc.exe" /T ps_4_0 /E main /Fo "F:\Coding Projects\C#\WpfMandelbrot\WpfMandelbrot\bin\Debug\net8.0-windows\Mandelbrot.ps" "F:\Coding Projects\C#\WpfMandelbrot\WpfMandelbrot\Shaders\Mandelbrot.hlsl" -->
